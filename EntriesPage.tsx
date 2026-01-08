@@ -8,6 +8,7 @@ interface EntriesPageProps {
   handleDatePartChange: (id: string, part: 'day' | 'month' | 'year', value: string) => void;
   deleteEntry: (id: string) => void;
   saveEntry: (id: string) => void;
+  resetEntry: (id: string) => void;
   toggleSection: (entryId: string, category: string) => void;
   expandedSections: Record<string, boolean>;
   handleExpenseItemChange: (entryId: string, category: any, itemId: string, field: string, value: any) => void;
@@ -23,6 +24,7 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
   handleDatePartChange,
   deleteEntry,
   saveEntry,
+  resetEntry,
   toggleSection,
   expandedSections,
   handleExpenseItemChange,
@@ -120,6 +122,28 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
 
         return (
           <div key={entry.id} id={`entry-card-${entry.id}`} className="p-6 md:p-10 bg-white rounded-3xl border border-teal-100 space-y-4 relative group hover:border-teal-300 transition-all shadow-sm">
+            {/* Subtle Reset Icon */}
+            <div className="absolute top-4 right-4 flex gap-2 no-print opacity-0 group-hover:opacity-100 transition-opacity">
+               <button 
+                  onClick={() => resetEntry(entry.id)}
+                  title="Reset form fields"
+                  className="p-2 text-slate-300 hover:text-teal-600 hover:bg-teal-50 rounded-full transition-all"
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                 </svg>
+               </button>
+               <button 
+                  onClick={() => deleteEntry(entry.id)}
+                  title="Remove entry card"
+                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+               >
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                 </svg>
+               </button>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
               <div className="space-y-6">
                 <div className="space-y-1">

@@ -98,6 +98,23 @@ const App = () => {
     setUiAlert(message);
   };
 
+  const resetEntry = (id: string) => {
+    setData(prev => ({
+      ...prev,
+      entries: prev.entries.map(e => e.id === id ? {
+        ...e,
+        branch: '',
+        dpCode: '',
+        inspectionType: 'RBIA',
+        onwardJourney: [],
+        returnJourney: [],
+        otherExpenses: [],
+        dayStatus: 'Inspection'
+      } : e)
+    }));
+    setAttemptedSaveIds(prev => { const next = new Set(prev); next.delete(id); return next; });
+  };
+
   const saveEntry = (id: string) => {
     const entry = data.entries.find(e => e.id === id);
     if (!entry || entry.lastSavedAt) return;
@@ -156,11 +173,7 @@ const App = () => {
   const deleteEntry = (id: string) => {
     const unsavedCards = data.entries.filter(e => !e.lastSavedAt);
     if (unsavedCards.length <= 1 && unsavedCards.some(e => e.id === id)) {
-      handleEntryChange(id, 'branch', '');
-      handleEntryChange(id, 'dpCode', '');
-      handleEntryChange(id, 'onwardJourney', []);
-      handleEntryChange(id, 'returnJourney', []);
-      handleEntryChange(id, 'otherExpenses', []);
+      resetEntry(id);
       return;
     }
     setData(prev => ({ ...prev, entries: prev.entries.filter(e => e.id !== id) }));
@@ -258,7 +271,7 @@ const App = () => {
           <div className="no-print">
             <EntriesPage 
               data={data} handleEntryChange={handleEntryChange} handleDatePartChange={handleDatePartChange}
-              deleteEntry={deleteEntry} saveEntry={saveEntry} toggleSection={(id, cat) => setExpandedSections(p => ({...p, [`${id}-${cat}`]: !p[`${id}-${cat}`]}))}
+              deleteEntry={deleteEntry} saveEntry={saveEntry} resetEntry={resetEntry} toggleSection={(id, cat) => setExpandedSections(p => ({...p, [`${id}-${cat}`]: !p[`${id}-${cat}`]}))}
               expandedSections={expandedSections} handleExpenseItemChange={(id, cat, iid, f, v) => setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: e[cat].map((it:any)=>it.id===iid?{...it,[f]:v}:it)}:e)}))}
               removeExpenseItem={(id,cat,iid) => setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: e[cat].filter((it:any)=>it.id!==iid)}:e)}))}
               addExpenseItem={(id,cat) => {
