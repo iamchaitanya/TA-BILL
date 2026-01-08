@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AppTab, TourData, UserProfile, InspectionEntry } from './types';
-import { generateId, MONTHS, isHoliday } from './utils';
+import { generateId, MONTHS, isHoliday, formatCurrency } from './utils';
 import { EntriesPage } from './EntriesPage';
 import { ReportPage } from './ReportPage';
 import { SummaryPage } from './SummaryPage';
@@ -102,14 +102,12 @@ const App = () => {
     const entry = data.entries.find(e => e.id === id);
     if (!entry || entry.lastSavedAt) return;
 
-    // 1. One entry per date check
     const isDuplicate = data.entries.some(e => e.lastSavedAt && e.date === entry.date);
     if (isDuplicate) {
       showAlert("entry already exists");
       return;
     }
 
-    // 2. Mandatory fields check
     if (entry.dayStatus === 'Inspection') {
       const isBranchEmpty = !entry.branch || !entry.branch.trim();
       const isTypeEmpty = !entry.inspectionType || !entry.inspectionType.trim();
@@ -128,15 +126,12 @@ const App = () => {
     }
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
-    // 3. Logic: Create a snapshot for history
     const savedSnapshot: InspectionEntry = { 
       ...JSON.parse(JSON.stringify(entry)), 
       id: generateId(), 
       lastSavedAt: timestamp 
     };
 
-    // 4. Update state: Move active entry's date to next day, keep data in boxes, add snapshot to list
     setData(prev => {
       const updatedEntries = prev.entries.map(e => {
         if (e.id === id) {
@@ -212,20 +207,38 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-[#fdfcfb] selection:bg-teal-100 flex flex-col">
+      {/* Hidden professional header for print only */}
+      <div className="print-only p-8 border-b-2 border-teal-900 mb-8">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-black text-teal-900 uppercase tracking-tighter">Tour Expense Report</h1>
+            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1">{data.tourName}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Report Month</p>
+            <p className="text-xl font-black text-teal-600">{selectedMonthLabel}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-12 mt-8">
+          <div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inspector Name</p>
+            <p className="text-lg font-black text-slate-800">{profile.name}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID</p>
+            <p className="text-lg font-black text-slate-800">{profile.employeeId}</p>
+          </div>
+        </div>
+      </div>
+
       {uiAlert && (
-        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4 animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs px-4 animate-in fade-in slide-in-from-top-4 duration-300 no-print">
           <div className="bg-red-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
               <span className="text-[10px] font-black uppercase tracking-[0.1em]">{uiAlert}</span>
             </div>
-            <button onClick={() => setUiAlert(null)} className="opacity-60 hover:opacity-100">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <button onClick={() => setUiAlert(null)} className="opacity-60 hover:opacity-100"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
         </div>
       )}
@@ -240,19 +253,21 @@ const App = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] no-print">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))]">
         {activeTab === 'entries' && (
-          <EntriesPage 
-            data={data} handleEntryChange={handleEntryChange} handleDatePartChange={handleDatePartChange}
-            deleteEntry={deleteEntry} saveEntry={saveEntry} toggleSection={(id, cat) => setExpandedSections(p => ({...p, [`${id}-${cat}`]: !p[`${id}-${cat}`]}))}
-            expandedSections={expandedSections} handleExpenseItemChange={(id, cat, iid, f, v) => setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: e[cat].map((it:any)=>it.id===iid?{...it,[f]:v}:it)}:e)}))}
-            removeExpenseItem={(id,cat,iid) => setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: e[cat].filter((it:any)=>it.id!==iid)}:e)}))}
-            addExpenseItem={(id,cat) => {
-              const item = cat==='otherExpenses' ? {id:generateId(), halting:0, lodging:0} : {id:generateId(), from:'', to:'', startTime:'', arrivedTime:'', amount:0};
-              setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: [...e[cat], item]}:e)}));
-            }}
-            recentlySaved={recentlySaved} attemptedSaveIds={attemptedSaveIds}
-          />
+          <div className="no-print">
+            <EntriesPage 
+              data={data} handleEntryChange={handleEntryChange} handleDatePartChange={handleDatePartChange}
+              deleteEntry={deleteEntry} saveEntry={saveEntry} toggleSection={(id, cat) => setExpandedSections(p => ({...p, [`${id}-${cat}`]: !p[`${id}-${cat}`]}))}
+              expandedSections={expandedSections} handleExpenseItemChange={(id, cat, iid, f, v) => setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: e[cat].map((it:any)=>it.id===iid?{...it,[f]:v}:it)}:e)}))}
+              removeExpenseItem={(id,cat,iid) => setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: e[cat].filter((it:any)=>it.id!==iid)}:e)}))}
+              addExpenseItem={(id,cat) => {
+                const item = cat==='otherExpenses' ? {id:generateId(), halting:0, lodging:0} : {id:generateId(), from:'', to:'', startTime:'', arrivedTime:'', amount:0};
+                setData(p => ({...p, entries: p.entries.map(e => e.id===id ? {...e, [cat]: [...e[cat], item]}:e)}));
+              }}
+              recentlySaved={recentlySaved} attemptedSaveIds={attemptedSaveIds}
+            />
+          </div>
         )}
         {activeTab === 'report' && (
           <ReportPage 
@@ -260,7 +275,7 @@ const App = () => {
             deleteFromReport={deleteEntry} reportTotals={reportTotals} currency={data.currency}
           />
         )}
-        {activeTab === 'summary' && (
+        {activeTab === 'summary' && (activeTab === 'summary' || activeTab === 'report') && (
           <SummaryPage 
             selectedMonthLabel={selectedMonthLabel} navigateMonth={navigateMonth}
             reportTotals={reportTotals} currency={data.currency}
