@@ -24,43 +24,87 @@ export const SummaryPage: React.FC<SummaryPageProps> = ({
   const downloadCSV = () => {
     // 1. Prepare Headers
     let csv = `TOUR EXPENSE REPORT - ${selectedMonthLabel}\n`;
-    csv += `Tour Name:,"${tourName}"\n`;
-    csv += `Inspector Name:,"${profile.name}"\n`;
-    csv += `Employee ID:,"${profile.employeeId}"\n\n`;
+    csv += `Tour Name:,"${tourName || ''}"\n`;
+    csv += `Inspector Name:,"${profile.name || ''}"\n`;
+    csv += `Employee ID:,"${profile.employeeId || ''}"\n\n`;
 
-    // 2. Prepare Detailed Table
-    csv += `Date,Day Status,Branch,Category,Travel Cost,Halting,Lodging,Day Total\n`;
+    // 2. Prepare Detailed Table Header - Comprehensive set of fields
+    const headers = [
+      "Date",
+      "Day Status",
+      "Branch Name",
+      "DP Code",
+      "Category",
+      "Onward From",
+      "Onward To",
+      "Onward Start",
+      "Onward Arrive",
+      "Onward Amount",
+      "Return From",
+      "Return To",
+      "Return Start",
+      "Return Arrive",
+      "Return Amount",
+      "Halting Allowance",
+      "Lodging Allowance",
+      "Day Total"
+    ];
+    csv += headers.join(",") + "\n";
     
     reportEntries.forEach(entry => {
       const isAutoHoliday = isHolidayStr(entry.date);
-      const isHoliday = isAutoHoliday || entry.dayStatus === 'Holiday';
-      const isLeave = entry.dayStatus === 'Leave';
+      const status = isAutoHoliday ? 'Holiday' : (entry.dayStatus || 'Inspection');
+      const branch = isAutoHoliday ? 'Holiday' : (entry.dayStatus === 'Inspection' ? (entry.branch || '') : entry.dayStatus);
+      const dpCode = (entry.dayStatus === 'Inspection' && !isAutoHoliday) ? (entry.dpCode || '') : '';
+      const category = isAutoHoliday ? 'Holiday' : (entry.dayStatus === 'Inspection' ? (entry.inspectionType || '') : entry.dayStatus);
       
-      const status = isAutoHoliday ? 'Holiday' : entry.dayStatus;
-      const branch = isAutoHoliday ? 'Holiday' : (entry.dayStatus === 'Inspection' ? entry.branch : entry.dayStatus);
-      const category = isAutoHoliday ? 'Holiday' : (entry.dayStatus === 'Inspection' ? entry.inspectionType : entry.dayStatus);
+      // Handle Onward Journey (assuming first item contains primary data, or combining)
+      const onward = entry.onwardJourney && entry.onwardJourney.length > 0 ? entry.onwardJourney[0] : { from: '', to: '', startTime: '', arrivedTime: '', amount: 0 };
+      const onwardAmount = entry.onwardJourney?.reduce((acc, curr) => acc + (curr.amount || 0), 0) || 0;
+
+      // Handle Return Journey
+      const returnJ = entry.returnJourney && entry.returnJourney.length > 0 ? entry.returnJourney[0] : { from: '', to: '', startTime: '', arrivedTime: '', amount: 0 };
+      const returnAmount = entry.returnJourney?.reduce((acc, curr) => acc + (curr.amount || 0), 0) || 0;
       
-      let travelVal = 0;
-      entry.onwardJourney.forEach(j => travelVal += j.amount || 0);
-      entry.returnJourney.forEach(j => travelVal += j.amount || 0);
-      
+      // Handle Other Expenses
       let haltVal = 0, lodgeVal = 0;
-      entry.otherExpenses.forEach(o => {
+      entry.otherExpenses?.forEach(o => {
         haltVal += o.halting || 0;
         lodgeVal += o.lodging || 0;
       });
 
-      const dayTotal = travelVal + haltVal + lodgeVal;
+      const dayTotal = onwardAmount + returnAmount + haltVal + lodgeVal;
       
-      csv += `${entry.date},${status},"${branch}","${category}",${travelVal},${haltVal},${lodgeVal},${dayTotal}\n`;
+      const row = [
+        entry.date,
+        status,
+        `"${branch}"`,
+        `"${dpCode}"`,
+        `"${category}"`,
+        `"${onward.from || ''}"`,
+        `"${onward.to || ''}"`,
+        `"${onward.startTime || ''}"`,
+        `"${onward.arrivedTime || ''}"`,
+        onwardAmount,
+        `"${returnJ.from || ''}"`,
+        `"${returnJ.to || ''}"`,
+        `"${returnJ.startTime || ''}"`,
+        `"${returnJ.arrivedTime || ''}"`,
+        returnAmount,
+        haltVal,
+        lodgeVal,
+        dayTotal
+      ];
+      
+      csv += row.join(",") + "\n";
     });
 
     // 3. Prepare Final Totals
     csv += `\nSUMMARY TOTALS\n`;
-    csv += `Total Halting Allowance:,,,,,${reportTotals.halting}\n`;
-    csv += `Total Lodging Allowance:,,,,,${reportTotals.lodging}\n`;
-    csv += `Total Travel Expenses:,,,,,${reportTotals.travel}\n`;
-    csv += `TOTAL REIMBURSEMENT CLAIM:,,,,,,,"${reportTotals.total} ${currency}"\n`;
+    csv += `Total Halting Allowance:,,,,,,,,,,,,,,,${reportTotals.halting}\n`;
+    csv += `Total Lodging Allowance:,,,,,,,,,,,,,,,${reportTotals.lodging}\n`;
+    csv += `Total Travel Expenses:,,,,,,,,,,,,,,,${reportTotals.travel}\n`;
+    csv += `TOTAL REIMBURSEMENT CLAIM:,,,,,,,,,,,,,,,,"${reportTotals.total} ${currency}"\n`;
 
     // 4. Trigger Download
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
