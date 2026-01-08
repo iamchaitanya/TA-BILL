@@ -275,10 +275,11 @@ const App = () => {
             deleteFromReport={deleteEntry} reportTotals={reportTotals} currency={data.currency}
           />
         )}
-        {activeTab === 'summary' && (activeTab === 'summary' || activeTab === 'report') && (
+        {activeTab === 'summary' && (
           <SummaryPage 
             selectedMonthLabel={selectedMonthLabel} navigateMonth={navigateMonth}
             reportTotals={reportTotals} currency={data.currency}
+            reportEntries={reportEntries} profile={profile} tourName={data.tourName}
           />
         )}
       </main>
