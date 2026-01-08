@@ -116,6 +116,8 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
         const branchError = isAttempted && (!entry.branch || !entry.branch.trim());
         const typeError = isAttempted && (!entry.inspectionType || !entry.inspectionType.trim());
 
+        const isExpenseGroupExpanded = !!expandedSections[`${entry.id}-expenseGroup`];
+
         return (
           <div key={entry.id} id={`entry-card-${entry.id}`} className="p-6 md:p-10 bg-white rounded-3xl border border-teal-100 space-y-4 relative group hover:border-teal-300 transition-all shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
@@ -191,10 +193,24 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
               </div>
 
               {entry.dayStatus === 'Inspection' && (
-                <div className="space-y-8">
-                  {renderExpenseSection(entry, 'onwardJourney', 'Onward Journey')}
-                  {renderExpenseSection(entry, 'returnJourney', 'Return Journey')}
-                  {renderExpenseSection(entry, 'otherExpenses', 'Other Expenses')}
+                <div className="space-y-2">
+                   <button 
+                    onClick={() => toggleSection(entry.id, 'expenseGroup')}
+                    className="flex items-center justify-between w-full p-4 bg-teal-50/50 rounded-2xl border border-teal-100 hover:bg-teal-50 transition-all text-[11px] font-black text-teal-900 uppercase tracking-widest"
+                  >
+                    <span>Travel and Halting Expenses</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform duration-300 ${isExpenseGroupExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isExpenseGroupExpanded && (
+                    <div className="space-y-8 pt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {renderExpenseSection(entry, 'onwardJourney', 'Onward Journey')}
+                      {renderExpenseSection(entry, 'returnJourney', 'Return Journey')}
+                      {renderExpenseSection(entry, 'otherExpenses', 'Other Expenses')}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
