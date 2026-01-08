@@ -4,7 +4,7 @@ import { AppTab, TourData, UserProfile, InspectionEntry } from './types';
 import { generateId, MONTHS, isHoliday } from './utils';
 import { EntriesPage } from './EntriesPage';
 import { ReportPage } from './ReportPage';
-import { ProfilePage } from './ProfilePage';
+import { SummaryPage } from './SummaryPage';
 
 const App = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,19 +129,29 @@ const App = () => {
 
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     
-    // 3. Logic: Create a snapshot and keep the active form populated
+    // 3. Logic: Create a snapshot for history
     const savedSnapshot: InspectionEntry = { 
       ...JSON.parse(JSON.stringify(entry)), 
       id: generateId(), 
       lastSavedAt: timestamp 
     };
 
-    // We do NOT replace the current entry with a new blank one.
-    // This satisfies "dont delete the entered data keep it in the boxes after savings".
-    setData(prev => ({
-      ...prev,
-      entries: [...prev.entries, savedSnapshot]
-    }));
+    // 4. Update state: Move active entry's date to next day, keep data in boxes, add snapshot to list
+    setData(prev => {
+      const updatedEntries = prev.entries.map(e => {
+        if (e.id === id) {
+          const current = new Date(e.date);
+          current.setDate(current.getDate() + 1);
+          const nextDateStr = current.toISOString().split('T')[0];
+          return { ...e, date: nextDateStr };
+        }
+        return e;
+      });
+      return {
+        ...prev,
+        entries: [...updatedEntries, savedSnapshot]
+      };
+    });
 
     setAttemptedSaveIds(prev => { const next = new Set(prev); next.delete(id); return next; });
     setRecentlySaved(id);
@@ -159,15 +169,6 @@ const App = () => {
       return;
     }
     setData(prev => ({ ...prev, entries: prev.entries.filter(e => e.id !== id) }));
-  };
-
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setProfile(prev => ({ ...prev, avatar: reader.result as string }));
-      reader.readAsDataURL(file);
-    }
   };
 
   const navigateMonth = (direction: number) => {
@@ -259,10 +260,10 @@ const App = () => {
             deleteFromReport={deleteEntry} reportTotals={reportTotals} currency={data.currency}
           />
         )}
-        {activeTab === 'profile' && (
-          <ProfilePage 
-            profile={profile} setProfile={setProfile} data={data} setData={setData}
-            fileInputRef={fileInputRef} handleAvatarUpload={handleAvatarUpload}
+        {activeTab === 'summary' && (
+          <SummaryPage 
+            selectedMonthLabel={selectedMonthLabel} navigateMonth={navigateMonth}
+            reportTotals={reportTotals} currency={data.currency}
           />
         )}
       </main>
@@ -276,9 +277,9 @@ const App = () => {
           <svg className="h-5 w-5" fill={activeTab === 'report' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           <span className="text-[10px] font-black uppercase tracking-widest">Report</span>
         </button>
-        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all ${activeTab === 'profile' ? 'text-teal-600 bg-teal-50/50' : 'text-slate-400'}`}>
-          <svg className="h-5 w-5" fill={activeTab === 'profile' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-          <span className="text-[10px] font-black uppercase tracking-widest">Settings</span>
+        <button onClick={() => setActiveTab('summary')} className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all ${activeTab === 'summary' ? 'text-teal-600 bg-teal-50/50' : 'text-slate-400'}`}>
+          <svg className="h-5 w-5" fill={activeTab === 'summary' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+          <span className="text-[10px] font-black uppercase tracking-widest">Summary</span>
         </button>
       </nav>
 

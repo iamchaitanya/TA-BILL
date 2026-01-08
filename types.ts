@@ -42,4 +42,4 @@ export interface TourData {
   entries: InspectionEntry[];
 }
 
-export type AppTab = 'entries' | 'report' | 'profile';
+export type AppTab = 'entries' | 'report' | 'summary';

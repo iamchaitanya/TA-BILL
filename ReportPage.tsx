@@ -48,27 +48,43 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             <tbody className="divide-y divide-slate-100">
               {reportEntries.map(entry => {
                 const isAutoHoliday = isHolidayStr(entry.date);
+                const isHoliday = isAutoHoliday || entry.dayStatus === 'Holiday';
+                const isLeave = entry.dayStatus === 'Leave';
+                
                 const branchToDisplay = isAutoHoliday ? 'Holiday' : (entry.dayStatus === 'Inspection' ? entry.branch : entry.dayStatus);
                 const categoryToDisplay = isAutoHoliday ? 'Holiday' : (entry.dayStatus === 'Inspection' ? entry.inspectionType : entry.dayStatus);
 
+                let rowBgClass = 'hover:bg-teal-50/30 transition-all';
+                let textColorClass = 'text-slate-900 font-black'; 
+                let categoryColorClass = 'text-slate-950 font-black'; // Matched to date
+                let dateColorClass = 'text-slate-950 font-black';
+
+                if (isHoliday) {
+                  rowBgClass += ' bg-red-50/20 opacity-70'; // Little bright (from 40 to 70)
+                  textColorClass = 'text-red-600 font-bold'; // Not as bright as font-black
+                  categoryColorClass = 'text-red-600 font-bold';
+                  dateColorClass = 'text-red-600 font-bold';
+                } else if (isLeave) {
+                  rowBgClass += ' bg-blue-50/20 opacity-70'; // Little bright (from 40 to 70)
+                  textColorClass = 'text-blue-600 font-bold'; // Not as bright as font-black
+                  categoryColorClass = 'text-blue-600 font-bold';
+                  dateColorClass = 'text-blue-600 font-bold';
+                }
+
                 return (
-                  <tr key={entry.id} className={`hover:bg-teal-50/30 transition-colors ${isAutoHoliday ? 'bg-red-50/20' : ''}`}>
+                  <tr key={entry.id} className={rowBgClass}>
                     <td className="px-4 py-1">
-                      <p className={`text-xs font-medium ${isAutoHoliday ? 'text-red-600' : 'text-slate-800'}`}>
+                      <p className={`text-xs ${dateColorClass}`}>
                         {formatDate(entry.date)}
                       </p>
                     </td>
                     <td className="px-4 py-1">
-                      <p className={`text-xs font-bold uppercase tracking-tight leading-tight ${isAutoHoliday ? 'text-red-600' : 'text-slate-700'}`}>
+                      <p className={`text-xs uppercase tracking-tight leading-tight ${textColorClass}`}>
                         {branchToDisplay}
                       </p>
                     </td>
                     <td className="px-4 py-1">
-                      <span className={`text-xs font-bold uppercase tracking-tight leading-none ${
-                        isAutoHoliday 
-                          ? 'text-red-600' 
-                          : 'text-slate-500'
-                      }`}>
+                      <span className={`text-xs uppercase tracking-tight leading-none ${categoryColorClass}`}>
                         {categoryToDisplay}
                       </span>
                     </td>
@@ -85,34 +101,6 @@ export const ReportPage: React.FC<ReportPageProps> = ({
               )}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-teal-100 p-5 shadow-sm space-y-4">
-        <h3 className="text-xs font-black text-teal-900 uppercase tracking-widest border-b border-teal-50 pb-2">Monthly Summary</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Halting</p>
-            <p className="text-sm font-black text-slate-800">{formatCurrency(reportTotals.halting, currency)}</p>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lodging</p>
-            <p className="text-sm font-black text-slate-800">{formatCurrency(reportTotals.lodging, currency)}</p>
-          </div>
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Travel</p>
-            <p className="text-sm font-black text-slate-800">{formatCurrency(reportTotals.travel, currency)}</p>
-          </div>
-        </div>
-        <div className="pt-4 border-t-2 border-teal-900 flex justify-between items-center">
-          <p className="text-xs font-black text-teal-900 uppercase tracking-widest">Total Claim</p>
-          <p className="text-xl font-black text-teal-600">{formatCurrency(reportTotals.total, currency)}</p>
-        </div>
-        <div className="flex justify-end gap-3 pt-2 no-print">
-           <button onClick={() => window.print()} className="flex items-center gap-2 px-6 py-2.5 bg-teal-900 text-white rounded-lg text-xs font-black uppercase tracking-widest hover:bg-black transition-all shadow-md active:scale-95">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-            Export
-          </button>
         </div>
       </div>
     </div>

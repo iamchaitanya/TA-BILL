@@ -41,7 +41,12 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
         <div className="flex justify-between items-center border-b border-slate-100 pb-2">
           <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</label>
           <button 
-            onClick={() => toggleSection(entry.id, category)}
+            onClick={() => {
+              if (!isExpanded && entry[category].length === 0) {
+                addExpenseItem(entry.id, category);
+              }
+              toggleSection(entry.id, category);
+            }}
             className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shadow-sm ${isExpanded ? 'bg-red-50 text-red-600 rotate-45' : 'bg-teal-50 text-teal-600'}`}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,15 +59,6 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
           <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
             {entry[category].map((item: any) => (
               <div key={item.id} className="p-4 bg-white border border-slate-100 rounded-2xl relative group shadow-sm">
-                {!isJourney && !isOther && (
-                  <button 
-                    onClick={() => removeExpenseItem(entry.id, category, item.id)}
-                    className="absolute top-2 right-2 p-1 text-slate-300 hover:text-red-500 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                )}
-
                 {isJourney ? (
                   <div className="flex flex-col gap-4 pr-6">
                     <div className="space-y-1">
@@ -100,17 +96,6 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
                 ) : null}
               </div>
             ))}
-            
-            <div className="flex justify-between items-center pl-1">
-              {((isJourney || isOther) && entry[category].length === 0) && (
-                <button 
-                  onClick={() => addExpenseItem(entry.id, category)}
-                  className="text-[9px] font-black text-teal-600 uppercase hover:underline"
-                >
-                  + Add
-                </button>
-              )}
-            </div>
           </div>
         )}
       </div>
@@ -135,15 +120,6 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
 
             return (
               <div key={entry.id} id={`entry-card-${entry.id}`} className="p-6 bg-slate-50 rounded-3xl border border-slate-200/50 space-y-4 relative group hover:border-teal-200 transition-all shadow-sm">
-                {data.entries.length > 1 && (
-                  <button 
-                    onClick={() => deleteEntry(entry.id)}
-                    className="absolute -top-3 -right-3 w-8 h-8 bg-white border border-slate-100 rounded-full shadow-md flex items-center justify-center text-slate-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 z-10"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                  </button>
-                )}
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <div className="space-y-1">
