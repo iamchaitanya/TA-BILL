@@ -103,121 +103,117 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <section className="bg-white p-6 rounded-3xl shadow-sm border border-teal-100 space-y-6">
-        <div className="space-y-12">
-          {[...data.entries].filter(e => !e.lastSavedAt).sort((a,b) => a.date.localeCompare(b.date)).map((entry) => {
-            const [y, m, d] = entry.date.split('-');
-            const yearVal = parseInt(y);
-            const monthVal = parseInt(m);
-            const dayVal = parseInt(d);
-            const daysInThisMonth = new Date(yearVal, monthVal, 0).getDate();
-            const dynamicDays = Array.from({ length: daysInThisMonth }, (_, i) => i + 1);
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
+      {[...data.entries].filter(e => !e.lastSavedAt).sort((a,b) => a.date.localeCompare(b.date)).map((entry) => {
+        const [y, m, d] = entry.date.split('-');
+        const yearVal = parseInt(y);
+        const monthVal = parseInt(m);
+        const dayVal = parseInt(d);
+        const daysInThisMonth = new Date(yearVal, monthVal, 0).getDate();
+        const dynamicDays = Array.from({ length: daysInThisMonth }, (_, i) => i + 1);
 
-            const isAttempted = attemptedSaveIds.has(entry.id);
-            const branchError = isAttempted && (!entry.branch || !entry.branch.trim());
-            const typeError = isAttempted && (!entry.inspectionType || !entry.inspectionType.trim());
+        const isAttempted = attemptedSaveIds.has(entry.id);
+        const branchError = isAttempted && (!entry.branch || !entry.branch.trim());
+        const typeError = isAttempted && (!entry.inspectionType || !entry.inspectionType.trim());
 
-            return (
-              <div key={entry.id} id={`entry-card-${entry.id}`} className="p-6 bg-slate-50 rounded-3xl border border-slate-200/50 space-y-4 relative group hover:border-teal-200 transition-all shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Inspection Date</label>
-                      <div className="grid grid-cols-3 gap-2">
-                        <select className="w-full bg-white border border-slate-200 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" value={dayVal} onChange={e => handleDatePartChange(entry.id, 'day', e.target.value)}>
-                          {dynamicDays.map(day => <option key={day} value={day}>{day}</option>)}
-                        </select>
-                        <select className="w-full bg-white border border-slate-200 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" value={monthVal} onChange={e => handleDatePartChange(entry.id, 'month', e.target.value)}>
-                          {MONTHS.map((month, idx) => <option key={month} value={idx + 1}>{month}</option>)}
-                        </select>
-                        <select className="w-full bg-white border border-slate-200 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" value={yearVal} onChange={e => handleDatePartChange(entry.id, 'year', e.target.value)}>
-                          {YEARS.map(year => <option key={year} value={year}>{year}</option>)}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Day Status</label>
-                      <div className="flex gap-2">
-                        {['Inspection', 'Leave', 'Holiday'].map((status) => (
-                          <button
-                            key={status}
-                            type="button"
-                            onClick={() => handleEntryChange(entry.id, 'dayStatus', status)}
-                            className={`flex-1 py-2 text-[10px] font-black uppercase tracking-tighter rounded-xl transition-all border-2 ${
-                              (entry.dayStatus || 'Inspection') === status
-                                ? 'bg-teal-900 border-teal-900 text-white shadow-sm'
-                                : 'bg-white border-slate-100 text-slate-400 hover:border-teal-100'
-                            }`}
-                          >
-                            {status}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {entry.dayStatus === 'Inspection' && (
-                      <>
-                        <div className="space-y-1">
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Branch Name <span className="text-red-500">*</span></label>
-                          <input type="text" className={`w-full bg-white border ${branchError ? 'border-red-500' : 'border-slate-200'} rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500`} value={entry.branch} onChange={e => handleEntryChange(entry.id, 'branch', e.target.value)} placeholder="Required" />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">DP Code</label>
-                          <input type="text" className="w-full bg-white border border-slate-200 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500" value={entry.dpCode} onChange={e => handleEntryChange(entry.id, 'dpCode', e.target.value)} />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest">Inspection Category <span className="text-red-500">*</span></label>
-                          <select 
-                            className="w-full bg-white border border-slate-200 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" 
-                            value={entry.inspectionType === 'RBIA' ? 'RBIA' : 'Others'} 
-                            onChange={e => handleEntryChange(entry.id, 'inspectionType', e.target.value === 'RBIA' ? 'RBIA' : '')}
-                          >
-                            {INSPECTION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                          {entry.inspectionType !== 'RBIA' && (
-                            <input 
-                              type="text" 
-                              placeholder="Enter custom category"
-                              className={`w-full mt-2 bg-white border ${typeError ? 'border-red-500' : 'border-slate-200'} rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 animate-in slide-in-from-top-1 duration-200`} 
-                              value={entry.inspectionType} 
-                              onChange={e => handleEntryChange(entry.id, 'inspectionType', e.target.value)} 
-                            />
-                          )}
-                        </div>
-                      </>
-                    )}
+        return (
+          <div key={entry.id} id={`entry-card-${entry.id}`} className="p-6 md:p-10 bg-white rounded-3xl border border-teal-100 space-y-4 relative group hover:border-teal-300 transition-all shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Inspection Date</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <select className="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" value={dayVal} onChange={e => handleDatePartChange(entry.id, 'day', e.target.value)}>
+                      {dynamicDays.map(day => <option key={day} value={day}>{day}</option>)}
+                    </select>
+                    <select className="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" value={monthVal} onChange={e => handleDatePartChange(entry.id, 'month', e.target.value)}>
+                      {MONTHS.map((month, idx) => <option key={month} value={idx + 1}>{month}</option>)}
+                    </select>
+                    <select className="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm p-3 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" value={yearVal} onChange={e => handleDatePartChange(entry.id, 'year', e.target.value)}>
+                      {YEARS.map(year => <option key={year} value={year}>{year}</option>)}
+                    </select>
                   </div>
+                </div>
 
-                  {entry.dayStatus === 'Inspection' && (
-                    <div className="space-y-6">
-                      {renderExpenseSection(entry, 'onwardJourney', 'Onward Journey')}
-                      {renderExpenseSection(entry, 'returnJourney', 'Return Journey')}
-                      {renderExpenseSection(entry, 'otherExpenses', 'Other Expenses')}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Day Status</label>
+                  <div className="flex gap-2">
+                    {['Inspection', 'Leave', 'Holiday'].map((status) => (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => handleEntryChange(entry.id, 'dayStatus', status)}
+                        className={`flex-1 py-3 text-[11px] font-black uppercase tracking-tighter rounded-xl transition-all border-2 ${
+                          (entry.dayStatus || 'Inspection') === status
+                            ? 'bg-teal-900 border-teal-900 text-white shadow-sm'
+                            : 'bg-white border-slate-100 text-slate-400 hover:border-teal-100'
+                        }`}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {entry.dayStatus === 'Inspection' && (
+                  <>
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Branch Name <span className="text-red-500">*</span></label>
+                      <input type="text" className={`w-full bg-slate-50 border ${branchError ? 'border-red-500' : 'border-slate-100'} rounded-xl text-sm p-3.5 outline-none focus:ring-2 focus:ring-teal-500`} value={entry.branch} onChange={e => handleEntryChange(entry.id, 'branch', e.target.value)} placeholder="Enter branch name" />
                     </div>
-                  )}
-                </div>
 
-                <div className="pt-6 border-t border-slate-200/50 flex justify-center">
-                  <button 
-                    onClick={() => saveEntry(entry.id)}
-                    className={`w-full max-w-xs flex items-center justify-center gap-3 px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${recentlySaved === entry.id ? 'bg-green-600 text-white' : 'bg-teal-900 text-white hover:bg-black'}`}
-                  >
-                    {recentlySaved === entry.id ? (
-                      <><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>Changes Saved!</>
-                    ) : (
-                      <><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>Save Entry</>
-                    )}
-                  </button>
-                </div>
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">DP Code</label>
+                      <input type="text" className="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm p-3.5 outline-none focus:ring-2 focus:ring-teal-500" value={entry.dpCode} onChange={e => handleEntryChange(entry.id, 'dpCode', e.target.value)} placeholder="Branch code" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Inspection Category <span className="text-red-500">*</span></label>
+                      <select 
+                        className="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm p-3.5 outline-none focus:ring-2 focus:ring-teal-500 appearance-none" 
+                        value={entry.inspectionType === 'RBIA' ? 'RBIA' : 'Others'} 
+                        onChange={e => handleEntryChange(entry.id, 'inspectionType', e.target.value === 'RBIA' ? 'RBIA' : '')}
+                      >
+                        {INSPECTION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      {entry.inspectionType !== 'RBIA' && (
+                        <input 
+                          type="text" 
+                          placeholder="Enter custom category"
+                          className={`w-full mt-2 bg-slate-50 border ${typeError ? 'border-red-500' : 'border-slate-100'} rounded-xl text-sm p-3.5 outline-none focus:ring-2 focus:ring-teal-500 animate-in slide-in-from-top-1 duration-200`} 
+                          value={entry.inspectionType} 
+                          onChange={e => handleEntryChange(entry.id, 'inspectionType', e.target.value)} 
+                        />
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
-            );
-          })}
-        </div>
-      </section>
+
+              {entry.dayStatus === 'Inspection' && (
+                <div className="space-y-8">
+                  {renderExpenseSection(entry, 'onwardJourney', 'Onward Journey')}
+                  {renderExpenseSection(entry, 'returnJourney', 'Return Journey')}
+                  {renderExpenseSection(entry, 'otherExpenses', 'Other Expenses')}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-8 border-t border-slate-100 flex justify-center">
+              <button 
+                onClick={() => saveEntry(entry.id)}
+                className={`w-full max-w-sm flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${recentlySaved === entry.id ? 'bg-green-600 text-white' : 'bg-teal-900 text-white hover:bg-black'}`}
+              >
+                {recentlySaved === entry.id ? (
+                  <><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>Saved Successfully!</>
+                ) : (
+                  <><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>Save Entry</>
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };
