@@ -35,7 +35,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       </div>
 
       <div className="bg-white rounded-2xl border border-teal-100 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-teal-100">

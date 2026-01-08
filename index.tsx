@@ -240,7 +240,7 @@ const App = () => {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-8 pb-24 no-print">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-8 pb-[calc(6rem+env(safe-area-inset-bottom))] no-print">
         {activeTab === 'entries' && (
           <EntriesPage 
             data={data} handleEntryChange={handleEntryChange} handleDatePartChange={handleDatePartChange}
@@ -268,7 +268,7 @@ const App = () => {
         )}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-teal-100 flex justify-around items-center py-2 px-6 z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] no-print">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-teal-100 flex justify-around items-center pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] px-6 z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] no-print">
         <button onClick={() => setActiveTab('entries')} className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all ${activeTab === 'entries' ? 'text-teal-600 bg-teal-50/50' : 'text-slate-400'}`}>
           <svg className="h-5 w-5" fill={activeTab === 'entries' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
           <span className="text-[10px] font-black uppercase tracking-widest">Entries</span>

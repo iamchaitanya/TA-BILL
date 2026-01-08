@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>IotaTravel - Your Trip Diary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,12 +13,14 @@
             font-family: 'Inter', sans-serif;
             background-color: #fdfcfb;
             color: #1e293b;
+            /* Support for iOS safe area insets */
+            padding-top: env(safe-area-inset-top);
         }
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
             .invoice-shadow { box-shadow: none !important; border: none !important; margin: 0 !important; padding: 0 !important; }
-            body { background-color: white !important; }
+            body { background-color: white !important; padding-top: 0 !important; }
         }
         /* Custom scrollbar for better aesthetics */
         ::-webkit-scrollbar {
