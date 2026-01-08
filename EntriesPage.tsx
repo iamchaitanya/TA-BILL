@@ -6,7 +6,6 @@ interface EntriesPageProps {
   data: TourData;
   handleEntryChange: (id: string, field: keyof InspectionEntry, value: any) => void;
   handleDatePartChange: (id: string, part: 'day' | 'month' | 'year', value: string) => void;
-  deleteEntry: (id: string) => void;
   saveEntry: (id: string) => void;
   resetEntry: (id: string) => void;
   toggleSection: (entryId: string, category: string) => void;
@@ -22,7 +21,6 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
   data,
   handleEntryChange,
   handleDatePartChange,
-  deleteEntry,
   saveEntry,
   resetEntry,
   toggleSection,
@@ -122,28 +120,6 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
 
         return (
           <div key={entry.id} id={`entry-card-${entry.id}`} className="p-6 md:p-10 bg-white rounded-3xl border border-teal-100 space-y-4 relative group hover:border-teal-300 transition-all shadow-sm">
-            {/* Subtle Reset Icon */}
-            <div className="absolute top-4 right-4 flex gap-2 no-print opacity-0 group-hover:opacity-100 transition-opacity">
-               <button 
-                  onClick={() => resetEntry(entry.id)}
-                  title="Reset form fields"
-                  className="p-2 text-slate-300 hover:text-teal-600 hover:bg-teal-50 rounded-full transition-all"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                 </svg>
-               </button>
-               <button 
-                  onClick={() => deleteEntry(entry.id)}
-                  title="Remove entry card"
-                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-               >
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                 </svg>
-               </button>
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
               <div className="space-y-6">
                 <div className="space-y-1">
@@ -239,13 +215,23 @@ export const EntriesPage: React.FC<EntriesPageProps> = ({
               )}
             </div>
 
-            <div className="pt-8 border-t border-slate-100 flex justify-center">
+            <div className="pt-8 border-t border-slate-100 flex gap-2 w-full max-w-lg mx-auto no-print">
+              <button 
+                onClick={() => resetEntry(entry.id)}
+                title="Reset form fields"
+                className="basis-[10%] h-14 md:h-16 shrink-0 flex items-center justify-center bg-slate-50 text-slate-400 border border-slate-100 rounded-2xl hover:text-teal-600 hover:bg-teal-100 transition-all active:scale-95 shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </button>
+              
               <button 
                 onClick={() => saveEntry(entry.id)}
-                className={`w-full max-w-sm flex items-center justify-center gap-3 px-10 py-4 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${recentlySaved === entry.id ? 'bg-green-600 text-white' : 'bg-teal-900 text-white hover:bg-black'}`}
+                className={`flex-1 h-14 md:h-16 flex items-center justify-center gap-3 px-6 rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all shadow-lg active:scale-95 ${recentlySaved === entry.id ? 'bg-green-600 text-white' : 'bg-teal-900 text-white hover:bg-black'}`}
               >
                 {recentlySaved === entry.id ? (
-                  <><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>Saved Successfully!</>
+                  <><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>Saved!</>
                 ) : (
                   <><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>Save Entry</>
                 )}
